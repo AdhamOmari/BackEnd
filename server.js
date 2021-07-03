@@ -19,7 +19,7 @@ app.get('/weather', (req, res) => {
         // console.log(lat)
         // console.log(lon)
         // console.log(searchQuery)
-        console.log(weather)
+        console.log(response)
 
 
         let dataLocal = weather.data.map((city, idx) => {
@@ -37,13 +37,13 @@ app.get('/weather', (req, res) => {
 
 app.get('/movies', (req, res) => {
     let movies;
-    
     let query = req.query.movie
-    let urlMove = `https://api.themoviedb.org/3/search/movie/?api_key=0dfdef03e4dcf73c240231f065f9c0b1?key=${process.env.MOVIE_BIT_API}&query=${query}`
+    let urlMove = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_BIT_API}&query=${query}`
+   
     let weatherbit = axios.get(urlMove).then(response => {
-        movies = response.data
-
-        let dataMove= movies.data.map((movieOn, idx) => {
+        movies = response.data.results
+          console.log(movies)
+        let dataMove= movies.map(movieOn => {
             return new MovieWach(movieOn)
         })
         res.json(dataMove)
@@ -62,9 +62,9 @@ app.get('/movies', (req, res) => {
 
 class ForeCast {
     constructor(weatherDate) {
-        // console.log("hhhhhhhhhh",weatherDate)
+        console.log("hhhhhhhhhh",weatherDate)
         this.date = weatherDate.valid_date
-        this.description = weatherDate.description
+        this.description = weatherDate.weather.description
 
 
     }
@@ -74,7 +74,7 @@ class MovieWach {
     constructor(movieData){
         this.data=movieData.original_title
         this.vots=movieData.vote_count
-        this.img= movieData.poster_path
+        this.img= 'https://image.tmdb.org/t/p/w500/'+movieData.poster_path
 
     }
 }

@@ -1,57 +1,80 @@
 const express = require('express');
-const weather = require('./data/weather.json');
+// const weather = require('./data/weather.json');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
+const axios = require('axios');
+const { response } = require('express');
 const PORT = process.env.PORT;
 app.use(cors());
 
 
 app.get('/weather', (req, res) => {
+    let weather;
     let lat = req.query.lat
     let lon = req.query.lon
-    let searchQuery = req.query.searchQuery
-    // console.log(lat)
-    // console.log(lon)
-    // console.log(searchQuery)
-    // console.log(weather[0].data)
+    let url = `http://api.weatherbit.io/v2.0/forecast/daily?key=${process.env.WETHER_BIT_API}&lat=${lat}&lon=${lon}`
+    let weatherbit = axios.get(url).then(response => {
+        weather = response.data
+        // console.log(lat)
+        // console.log(lon)
+        // console.log(searchQuery)
+        console.log(weather)
 
-    let findData = () => {
-        let dataLocal = weather.filter((city, idx) => {
-            if (city.city_name.toLowerCase() === searchQuery.toLowerCase()) {
-                // return (city.city_name.toLowerCase() === searchQuery.toLowerCase() && city.lat===Number(lat)&&city.lon===Number(lon))
-                return true
-            }else  {
-        return console.log('"error": "Something went wrong."')
-            }
+
+        let dataLocal = weather.data.map((city, idx) => {
+            return new ForeCast(city)
         })
-        // console.log(city.lat)
-        // console.log(city.lon)
-
-        // console.log(dataLocal)
-        return dataLocal.map(item => {
-            let newForcast = new ForeCast(item)
-            console.log(newForcast)
-            return newForcast
-
+        res.json(dataLocal)
+        if (dataLocal === 0) {
+            res.status(500).send('there is somthing wrong')
         }
-        )
 
-    };
-    //   console.log(ForeCast)
+    }).catch(error => res.send(error))
+})
+//   console.log(ForeCast)
 
 
-    res.json(findData());
-    // res.json(findData())
+app.get('/movies', (req, res) => {
+    let movies;
+    
+    let query = req.query.movie
+    let urlMove = `https://api.themoviedb.org/3/search/movie/?api_key=0dfdef03e4dcf73c240231f065f9c0b1?key=${process.env.MOVIE_BIT_API}&query=${query}`
+    let weatherbit = axios.get(urlMove).then(response => {
+        movies = response.data
 
-});
+        let dataMove= movies.data.map((movieOn, idx) => {
+            return new MovieWach(movieOn)
+        })
+        res.json(dataMove)
+        if (dataMove === 0) {
+            res.status(500).send('there is somthing wrong')
+        }
+
+    }).catch(error => res.send(error))
+})
+//   console.log(ForeCast)
+
+
+
+
+
 
 class ForeCast {
     constructor(weatherDate) {
         // console.log("hhhhhhhhhh",weatherDate)
-        this.date = weatherDate.data[0].valid_date
-        this.description = weatherDate.data[0].weather.description
+        this.date = weatherDate.valid_date
+        this.description = weatherDate.description
 
+
+    }
+}
+
+class MovieWach {
+    constructor(movieData){
+        this.data=movieData.original_title
+        this.vots=movieData.vote_count
+        this.img= movieData.poster_path
 
     }
 }
